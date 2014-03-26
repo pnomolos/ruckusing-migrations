@@ -197,24 +197,24 @@ class Ruckusing_MySQLAdapter extends Ruckusing_BaseAdapter implements Ruckusing_
 		$query_type = $this->determine_query_type($query);
 		$data = array();
 		if($query_type == SQL_SELECT || $query_type == SQL_SHOW) {		  
-			$res = mysql_query($query, $this->conn);
+			$res = mysqli_query($query, $this->conn);
 			if($this->isError($res)) { 
-  			trigger_error(sprintf("Error executing 'query' with:\n%s\n\nReason: %s\n\n", $query, mysql_error($this->conn)));
+  			trigger_error(sprintf("Error executing 'query' with:\n%s\n\nReason: %s\n\n", $query, mysqli_error($this->conn)));
 		  }
-		  while($row = mysql_fetch_assoc($res)) {
+		  while($row = mysqli_fetch_assoc($res)) {
 		    $data[] = $row; 
 	    }
 			return $data;
 			
 		} else {
 		  // INSERT, DELETE, etc...
-			$res = mysql_query($query, $this->conn);
+			$res = mysqli_query($query, $this->conn);
 			if($this->isError($res)) { 
-  			trigger_error(sprintf("Error executing 'query' with:\n%s\n\nReason: %s\n\n", $query, mysql_error($this->conn)));
+  			trigger_error(sprintf("Error executing 'query' with:\n%s\n\nReason: %s\n\n", $query, mysqli_error($this->conn)));
 		  }
 
 		  if ($query_type == SQL_INSERT) {
-		  	return mysql_insert_id($this->conn);
+		  	return mysqli_insert_id($this->conn);
 		  }
 		  
 		  return true;
@@ -225,11 +225,11 @@ class Ruckusing_MySQLAdapter extends Ruckusing_BaseAdapter implements Ruckusing_
 		$this->logger->log($query);
 		$query_type = $this->determine_query_type($query);
 		if($query_type == SQL_SELECT || $query_type == SQL_SHOW) {
-		  $res = mysql_query($query, $this->conn);
+		  $res = mysqli_query($query, $this->conn);
 			if($this->isError($res)) { 
-  			trigger_error(sprintf("Error executing 'query' with:\n%s\n\nReason: %s\n\n", $query, mysql_error($this->conn)));
+  			trigger_error(sprintf("Error executing 'query' with:\n%s\n\nReason: %s\n\n", $query, mysqli_error($this->conn)));
 		  }
-		  return mysql_fetch_assoc($res);			
+		  return mysqli_fetch_assoc($res);			
 		} else {
 		  trigger_error("Query for select_one() is not one of SELECT or SHOW: $query");
 	  }
@@ -261,7 +261,7 @@ class Ruckusing_MySQLAdapter extends Ruckusing_BaseAdapter implements Ruckusing_
 	}
 	
 	public function quote_string($str) {
-	 return mysql_real_escape_string($str); 
+	 return mysqli_real_escape_string($str); 
   }
   
   public function identifier($str) {
@@ -640,11 +640,11 @@ class Ruckusing_MySQLAdapter extends Ruckusing_BaseAdapter implements Ruckusing_
       } else {
         $host = $db_info['host'];
       }
-      $this->conn = mysql_connect($host, $db_info['user'], $db_info['password']);
+      $this->conn = mysqli_connect($host, $db_info['user'], $db_info['password']);
       if(!$this->conn) {
         die("\n\nCould not connect to the DB, check host / user / password\n\n");
       }
-      if(!mysql_select_db($db_info['database'], $this->conn)) {
+      if(!mysqli_select_db($db_info['database'], $this->conn)) {
         die("\n\nCould not select the DB, check permissions on host\n\n");
       }
       return true;
@@ -665,8 +665,8 @@ class Ruckusing_MySQLAdapter extends Ruckusing_BaseAdapter implements Ruckusing_
 		if($this->tables_loaded == false || $reload) {
 			$this->tables = array(); //clear existing structure			
 			$qry = "SHOW TABLES";
-			$res = mysql_query($qry, $this->conn);
-			while($row = mysql_fetch_row($res)) {
+			$res = mysqli_query($qry, $this->conn);
+			while($row = mysqli_fetch_row($res)) {
 			  $table = $row[0];
 			  $this->tables[$table] = true;
 		  }
@@ -735,20 +735,20 @@ class Ruckusing_MySQLAdapter extends Ruckusing_BaseAdapter implements Ruckusing_
   }
   
   private function beginTransaction() {
-    mysql_query("BEGIN", $this->conn);
+    mysqli_query("BEGIN", $this->conn);
     $this->in_trx = true;
   }
   
   private function commit() {
     if($this->in_trx === true) {
-     mysql_query("COMMIT", $this->conn);
+     mysqli_query("COMMIT", $this->conn);
      $this->in_trx = false; 
     }
   }
   
   private function rollback() {
     if($this->in_trx === true) {
-     mysql_query("ROLLBACK", $this->conn);
+     mysqli_query("ROLLBACK", $this->conn);
      $this->in_trx = false; 
     }    
   }
