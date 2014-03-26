@@ -197,7 +197,7 @@ class Ruckusing_MySQLAdapter extends Ruckusing_BaseAdapter implements Ruckusing_
 		$query_type = $this->determine_query_type($query);
 		$data = array();
 		if($query_type == SQL_SELECT || $query_type == SQL_SHOW) {
-			$res = mysqli_query($query, $this->conn);
+			$res = mysqli_query($this->conn, $query);
 			if($this->isError($res)) {
   			trigger_error(sprintf("Error executing 'query' with:\n%s\n\nReason: %s\n\n", $query, mysqli_error($this->conn)));
 		  }
@@ -208,7 +208,7 @@ class Ruckusing_MySQLAdapter extends Ruckusing_BaseAdapter implements Ruckusing_
 
 		} else {
 		  // INSERT, DELETE, etc...
-			$res = mysqli_query($query, $this->conn);
+			$res = mysqli_query($this->conn, $query);
 			if($this->isError($res)) {
   			trigger_error(sprintf("Error executing 'query' with:\n%s\n\nReason: %s\n\n", $query, mysqli_error($this->conn)));
 		  }
@@ -225,7 +225,7 @@ class Ruckusing_MySQLAdapter extends Ruckusing_BaseAdapter implements Ruckusing_
 		$this->logger->log($query);
 		$query_type = $this->determine_query_type($query);
 		if($query_type == SQL_SELECT || $query_type == SQL_SHOW) {
-		  $res = mysqli_query($query, $this->conn);
+		  $res = mysqli_query($this->conn, $query);
 			if($this->isError($res)) {
   			trigger_error(sprintf("Error executing 'query' with:\n%s\n\nReason: %s\n\n", $query, mysqli_error($this->conn)));
 		  }
@@ -639,7 +639,7 @@ class Ruckusing_MySQLAdapter extends Ruckusing_BaseAdapter implements Ruckusing_
       if(!$this->conn) {
         die("\n\nCould not connect to the DB, check host / user / password\n\n");
       }
-      if(!mysqli_select_db($db_info['database'], $this->conn)) {
+      if(!mysqli_select_db($this->conn, $db_info['database'])) {
         die("\n\nCould not select the DB, check permissions on host\n\n");
       }
       return true;
@@ -660,7 +660,7 @@ class Ruckusing_MySQLAdapter extends Ruckusing_BaseAdapter implements Ruckusing_
 		if($this->tables_loaded == false || $reload) {
 			$this->tables = array(); //clear existing structure
 			$qry = "SHOW TABLES";
-			$res = mysqli_query($qry, $this->conn);
+			$res = mysqli_query($this->conn, $qry);
 			while($row = mysqli_fetch_row($res)) {
 			  $table = $row[0];
 			  $this->tables[$table] = true;
@@ -730,20 +730,20 @@ class Ruckusing_MySQLAdapter extends Ruckusing_BaseAdapter implements Ruckusing_
   }
 
   private function beginTransaction() {
-    mysqli_query("BEGIN", $this->conn);
+    mysqli_query($this->conn, "BEGIN");
     $this->in_trx = true;
   }
 
   private function commit() {
     if($this->in_trx === true) {
-     mysqli_query("COMMIT", $this->conn);
+     mysqli_query($this->conn, "COMMIT");
      $this->in_trx = false;
     }
   }
 
   private function rollback() {
     if($this->in_trx === true) {
-     mysqli_query("ROLLBACK", $this->conn);
+     mysqli_query($this->conn, "ROLLBACK");
      $this->in_trx = false;
     }
   }
